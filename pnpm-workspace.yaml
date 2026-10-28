@@ -1,0 +1,2 @@
+# Keep this teaching repository independent from any parent pnpm workspace.
+packages: []
