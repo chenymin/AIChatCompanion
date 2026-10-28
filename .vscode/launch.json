@@ -14,6 +14,18 @@
       "skipFiles": ["<node_internals>/**"]
     },
     {
+      "name": "课程：多轮会话",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--env-file-if-exists=.env"],
+      "program": "${workspaceFolder}/src/cli.ts",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
       "name": "课程：Node Attach",
       "type": "node",
       "request": "attach",
