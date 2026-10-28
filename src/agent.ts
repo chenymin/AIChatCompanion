@@ -1,8 +1,9 @@
-import { generateMockReply } from './providers/mock.ts'
+import { createModelClient } from './providers/index.ts'
+import type { ChatMessage } from './model.ts'
 import { CourseError, safeError } from './errors.ts'
 import { createTrace } from './trace.ts'
 
-export async function runTurn(input: string): Promise<string> {
+export async function runTurn(input: string, options: { signal?: AbortSignal } = {}): Promise<string> {
   const trace = createTrace()
 
   try {
@@ -14,9 +15,17 @@ export async function runTurn(input: string): Promise<string> {
     }
 
     trace.event('input.normalized', { inputLength: userText.length })
+    const model = createModelClient()
+    const messages: ChatMessage[] = [
+      { role: 'system', content: '你是友善的中文聊天助手。简短、自然地回应用户，只输出面向用户的回答。' },
+      { role: 'user', content: userText },
+    ]
+    trace.event('provider.selected', { mode: model.mode, requestMessageCount: messages.length })
+    if (options.signal?.aborted) throw new CourseError('REQUEST_CANCELLED', '本轮请求已取消。')
     trace.modelCall()
-    trace.event('model.started', { mode: 'mock' })
-    const reply = await generateMockReply(userText)
+    trace.event('model.started', { mode: model.mode })
+    const reply = await model.generate(messages, { signal: options.signal })
+    if (options.signal?.aborted) throw new CourseError('REQUEST_CANCELLED', '本轮请求已取消。')
     trace.event('model.completed', { outputLength: reply.length })
     trace.event('turn.completed', { saved: false })
     return reply
